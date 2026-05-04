@@ -990,13 +990,42 @@ function closeModalOutside(e){if(e.target===document.getElementById("projectModa
 document.addEventListener("keydown",function(e){if(e.key==="Escape")closeModal();});
 function openFullImg(src){var o=document.createElement("div");o.style.cssText="position:fixed;inset:0;z-index:600;background:rgba(0,0,0,0.92);display:flex;align-items:center;justify-content:center;cursor:zoom-out";var i=document.createElement("img");i.src=src;i.style.cssText="max-width:92vw;max-height:88vh;border-radius:8px";o.appendChild(i);o.onclick=function(){document.body.removeChild(o);};document.body.appendChild(o);}
 function submitForm(){
-  var n=document.getElementById("fName").value.trim(),p=document.getElementById("fPhone").value.trim(),e=document.getElementById("fEmail").value.trim(),m=document.getElementById("fMsg").value.trim();
-  if(!n){alert("Ingresa tu nombre.");return;}
-  if(!p&&!e){alert("Ingresa tu teléfono o correo.");return;}
-  var s=encodeURIComponent("Consulta: "+currentProject+" - "+n);
-  var b=encodeURIComponent("Proyecto: "+currentProject+"\nNombre: "+n+"\nTelefono: "+(p||"No indicado")+"\nCorreo: "+(e||"No indicado")+"\nMensaje: "+(m||"Sin mensaje"));
-  window.location.href="mailto:mariopinto1984@gmail.com?subject="+s+"&body="+b;
-  closeModal();
+  var n=document.getElementById("fName").value.trim();
+  var p=document.getElementById("fPhone").value.trim();
+  var e=document.getElementById("fEmail").value.trim();
+  var m=document.getElementById("fMsg").value.trim();
+  if(!n){alert("Por favor ingresa tu nombre.");return;}
+  if(!p&&!e){alert("Por favor ingresa tu teléfono o correo.");return;}
+
+  var btn = document.querySelector(".modal-form button[onclick='submitForm()']") ||
+            document.querySelector(".modal-form button");
+  if(btn){ btn.textContent = "Enviando..."; btn.disabled = true; }
+
+  var data = new FormData();
+  data.append("name", n);
+  data.append("phone", p || "No indicado");
+  data.append("email", e || "No indicado");
+  data.append("message", m || "Sin mensaje adicional");
+  data.append("project", currentProject);
+  data.append("_subject", "Consulta: " + currentProject + " - " + n);
+  data.append("_replyto", e || "noreply@consulta.com");
+
+  fetch("https://formspree.io/f/xdabeglo", {
+    method: "POST",
+    body: data,
+    headers: { "Accept": "application/json" }
+  }).then(function(res){
+    if(res.ok){
+      alert("\u00a1Mensaje enviado! Yesenia se pondr\u00e1 en contacto contigo pronto.");
+      closeModal();
+    } else {
+      alert("Hubo un error al enviar. Por favor escr\u00edbenos por WhatsApp.");
+      if(btn){ btn.textContent = "Enviar consulta"; btn.disabled = false; }
+    }
+  }).catch(function(){
+    alert("Sin conexi\u00f3n. Por favor escr\u00edbenos por WhatsApp.");
+    if(btn){ btn.textContent = "Enviar consulta"; btn.disabled = false; }
+  });
 }
 function showTab(name,btn){
   document.querySelectorAll(".tab-content").forEach(function(el){el.classList.remove("active");});
